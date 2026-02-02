@@ -1,6 +1,6 @@
 package com.example.demo.bot;
 
-import com.example.demo.service.CloudStorageService;
+import com.example.demo.service.LocalStorageService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -18,7 +18,7 @@ import java.util.List;
 @Component
 public class TelegramFileBot extends TelegramLongPollingBot {
 
-    private final CloudStorageService cloudStorageService;
+    private final LocalStorageService storageService;
 
     @Value("${telegram.bot.username}")
     private String botUsername;
@@ -26,8 +26,8 @@ public class TelegramFileBot extends TelegramLongPollingBot {
     @Value("${telegram.bot.token}")
     private String botToken;
 
-    public TelegramFileBot(CloudStorageService cloudStorageService) {
-        this.cloudStorageService = cloudStorageService;
+    public TelegramFileBot(LocalStorageService storageService) {
+        this.storageService = storageService;
     }
 
     @Override
@@ -47,9 +47,9 @@ public class TelegramFileBot extends TelegramLongPollingBot {
                     byte[] data = download(fileUrl);
 
                     String fileName = System.currentTimeMillis() + "_" + fileId;
-                    String gcsUrl = cloudStorageService.upload(data, fileName);
+                    String savedPath = storageService.save(data, fileName);
 
-                    sendMessage(msg.getChatId(), "✅ Файл сохранён:\n" + gcsUrl);
+                    sendMessage(msg.getChatId(), "✅ Файл сохранён локально:\n" + savedPath);
                 }
             }
         } catch (Exception e) {
